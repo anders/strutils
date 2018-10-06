@@ -71,6 +71,11 @@ func TestSplitLength(t *testing.T) {
 			8,
 			[]string{"\u3042\u3042", "\u3042\u3042"},
 		},
+		{
+			"\u3042",
+			2,
+			nil,
+		},
 	}
 	for _, tt := range tests {
 		if got := SplitLength(tt.input, tt.len); !reflect.DeepEqual(got, tt.want) {

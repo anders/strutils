@@ -20,7 +20,7 @@ func SplitLength(s string, length int) []string {
 
 // TruncateString truncates s to a maximum of length bytes without breaking UTF-8 codepoints.
 func TruncateString(s string, length int) string {
-	var tmp []byte
+	tmp := make([]byte, 0, length)
 
 	for i := 0; i < len(s); i++ {
 		b := s[i]
