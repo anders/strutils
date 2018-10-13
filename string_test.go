@@ -2,6 +2,7 @@ package utils
 
 import (
 	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -31,12 +32,12 @@ func TestTruncateString(t *testing.T) {
 		length int
 	}{
 		{"Anders", "And", 3},
+		{"åååååå", "ååå", 6},
 		// Hiragana a times 4
 		{"\u3042\u3042\u3042\u3042", "\u3042", 4},
-		// Invalid starting bytes
-		{"\xff\xff\xff\xff\xff", "", 100},
+		{"\U0001F393", "", 1},
 		// Continuation bytes
-		{"\x80\x80\x80\x80\x80", "", 100},
+		{"\x80\x80", "", 1},
 	}
 	for _, test := range tests {
 		if got := TruncateString(test.input, test.length); got != test.want {
@@ -81,5 +82,12 @@ func TestSplitLength(t *testing.T) {
 		if got := SplitLength(tt.input, tt.len); !reflect.DeepEqual(got, tt.want) {
 			t.Errorf("SplitLength() = %v, want %v", got, tt.want)
 		}
+	}
+}
+
+func BenchmarkTruncateString(b *testing.B) {
+	longString := strings.Repeat("\u3042", 100)
+	for i := 0; i < b.N; i++ {
+		TruncateString(longString, 150)
 	}
 }

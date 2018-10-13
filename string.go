@@ -20,26 +20,20 @@ func SplitLength(s string, length int) []string {
 
 // TruncateString truncates s to a maximum of length bytes without breaking UTF-8 codepoints.
 func TruncateString(s string, length int) string {
-	tmp := make([]byte, 0, length)
-
-	for i := 0; i < len(s); i++ {
-		b := s[i]
-
-		cplen := utf8len(b)
-		if cplen < 1 || i+cplen-1 > len(s) {
-			// invalid utf-8, return whatever we got so far
-			return string(tmp)
-		}
-
-		if len(tmp)+cplen > length {
-			break
-		}
-
-		tmp = append(tmp, s[i:i+cplen]...)
-		i += cplen - 1
+	if len(s) <= length {
+		return s
 	}
 
-	return string(tmp)
+	cutoff := length
+	for s[cutoff]&0xc0 == 0x80 {
+		cutoff--
+		if cutoff < 0 {
+			cutoff = 0
+			break
+		}
+	}
+
+	return s[0:cutoff]
 }
 
 // utf8len returns the length of a UTF-8 encoded codepoint based on the starting byte.
