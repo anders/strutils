@@ -11,5 +11,10 @@
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
 
- # GoLand
- .idea
+# GoLand
+.idea/workspace.xml
+.idea/inspectionProfiles
+
+# Unicode data
+Blocks.txt
+UnicodeData.txt
