@@ -1,4 +1,4 @@
-package utils
+package strutils
 
 // SplitLength returns a slice of strings, each string is at most length bytes long.
 // Does not break UTF-8 codepoints.
