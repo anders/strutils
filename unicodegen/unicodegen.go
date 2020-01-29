@@ -3,6 +3,9 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"compress/zlib"
+	"encoding/base64"
+	"encoding/gob"
 	"fmt"
 	"go/format"
 	"io"
@@ -60,28 +63,25 @@ func parseBlocks(r io.Reader, buf *bytes.Buffer) error {
 	return nil
 }
 
-func parseUnicodeData(r io.Reader, buf *bytes.Buffer) error {
-	buf.WriteString("var unicodeData = []unicodeRow{\n")
+type dataRow struct {
+	R       rune
+	Name    string
+	OldName string
+}
 
-	scanner := bufio.NewScanner(r)
-	scanner.Split(bufio.ScanLines)
-
-	for scanner.Scan() {
-		line := scanner.Text()
-
-		tmp := strings.Split(line, ";")
-
+func loadUnicodeData(r io.Reader) ([]dataRow, error) {
+	ret := []dataRow{}
+	sc := bufio.NewScanner(r)
+	sc.Split(bufio.ScanLines)
+	for sc.Scan() {
+		tmp := strings.Split(sc.Text(), ";")
 		r, err := strconv.ParseInt(tmp[0], 16, 32)
 		if err != nil {
-			return err
+			return ret, err
 		}
-
-		buf.WriteString(fmt.Sprintf("{0x%x, %#v, %#v},\n", r, tmp[1], tmp[10]))
+		ret = append(ret, dataRow{rune(r), tmp[1], tmp[10]})
 	}
-
-	buf.WriteString("}\n")
-
-	return nil
+	return ret, nil
 }
 
 func main() {
@@ -105,8 +105,44 @@ func main() {
 	}
 	defer f.Close()
 
-	if err := parseUnicodeData(f, buf); err != nil {
+	chs, err := loadUnicodeData(f)
+	if err != nil {
 		log.Fatal(err)
+	}
+
+	chb := &bytes.Buffer{}
+	enc := gob.NewEncoder(chb)
+	if err := enc.Encode(chs); err!= nil {
+		log.Fatal(err)
+	}
+
+	chc := &bytes.Buffer{}
+
+	w := zlib.NewWriter(chc)
+	if _, err := w.Write(chb.Bytes()); err != nil {
+		log.Fatal(err)
+	}
+	if err := w.Flush(); err != nil {
+		log.Fatal(err)
+	}
+
+	s := base64.StdEncoding.EncodeToString(chc.Bytes())
+	buf.WriteString("var gobbedUnicode =")
+
+	rd := strings.NewReader(s)
+	total := 0
+	tmp := make([]byte, 120)
+	for {
+		n, err := rd.Read(tmp)
+		if err == io.EOF { break }
+		total += n
+		buf.WriteByte('"')
+		buf.Write(tmp[0:n])
+		if total < len(s) {
+			buf.WriteString("\" +\n")
+		} else {
+			buf.WriteString("\"")
+		}
 	}
 
 	// gofmt

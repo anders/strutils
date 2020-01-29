@@ -6,7 +6,7 @@ import "sort"
 func Block(r rune) string {
 	idx := sort.Search(len(unicodeBlocks), func(i int) bool {
 		b := unicodeBlocks[i]
-		return b.end >= r
+		return r <= b.end
 	})
 
 	if idx < 0 || idx >= len(unicodeBlocks) {
