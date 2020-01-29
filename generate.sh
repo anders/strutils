@@ -8,4 +8,4 @@ for x in Blocks.txt UnicodeData.txt; do
   fi
 done
 
-go test --tags=unicode_gen
+go generate

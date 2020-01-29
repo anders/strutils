@@ -1,5 +1,7 @@
 package strutils
 
+//go:generate go run ./unicodegen/unicodegen.go
+
 type unicodeBlock struct {
 	start rune
 	end   rune
@@ -7,7 +9,7 @@ type unicodeBlock struct {
 }
 
 type unicodeRow struct {
-	value   rune   // 0
-	name    string // 1
-	oldName string // 10
+	value   rune
+	name    string
+	oldName string
 }
