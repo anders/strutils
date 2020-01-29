@@ -12,8 +12,11 @@ func TestBlock(t *testing.T) {
 		r    rune
 		want string
 	}{
+		{0x0, "Basic Latin"},
 		{0x1, "Basic Latin"},
+		{0x80, "Latin-1 Supplement"},
 		{0x187, "Latin Extended-B"},
+		{0x110000, "No_Block"},
 	}
 
 	for _, tt := range tests {
